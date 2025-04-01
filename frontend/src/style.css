@@ -1,0 +1,42 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
+@import "tailwindcss";
+@theme {
+    --color-primary-main: #F56E2C;
+    --color-primary-hover: #CA5C24;
+    --color-secondary-main: #FDF0DD;
+    --color-green-main: #CFF143;
+    --font-rubik: "Rubik", system-ui, sans-serif; 
+    --font-nunito: "Nunito", system-ui, sans-serif; 
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 font-rubik;
+}
+
+
+.btn {
+  @apply px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply bg-primary-main text-secondary-main hover:bg-primary-hover focus:ring-secondary-main;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}
+
+.input {
+  @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500;
+}
+
+.card {
+  @apply bg-white shadow rounded-lg p-6;
+}
+

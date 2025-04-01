@@ -1,0 +1,15 @@
+{
+    "name": "crondiwa",
+    "version": "1.0.0",
+    "description": "Crontab UI with Vue.js frontend and Fastify backend",
+    "scripts": {
+      "build:frontend": "cd frontend && npm run build",
+      "build:backend": "cd backend && npm run build",
+      "build": "npm run build:frontend && npm run build:backend",
+      "docker:build": "docker build -t crondiwa:latest .",
+      "docker:run": "docker run -p 3000:3000 crondiwa:latest",
+      "docker:dev": "docker-compose up"
+    },
+    "author": "",
+    "license": "ISC"
+  }
