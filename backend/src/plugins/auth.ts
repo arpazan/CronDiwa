@@ -19,14 +19,6 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
     authenticate: { realm: "Crontab API" },
   });
 
-  // Add auth decorator for protected routes
-  fastify.decorate("authenticate", async (request: any, reply: any) => {
-    try {
-      await request.basicAuth();
-    } catch (err) {
-      reply.code(401).send({ error: "Unauthorized" });
-    }
-  });
 };
 
 export default fp(authPlugin);

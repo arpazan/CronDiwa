@@ -6,9 +6,11 @@
     --color-primary-main: #F56E2C;
     --color-primary-hover: #CA5C24;
     --color-secondary-main: #FDF0DD;
+    --color-tertiary-main: #87AECD;
     --color-green-main: #CFF143;
     --font-rubik: "Rubik", system-ui, sans-serif; 
     --font-nunito: "Nunito", system-ui, sans-serif; 
+    --color-gray-900: #061B14
 }
 
 body {

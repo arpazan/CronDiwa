@@ -7,6 +7,7 @@ import {
 import CrontabsView from "../views/CrontabsView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFound from "../views/NotFound.vue";
+import CronLogDetail from "../components/CronLogDetail.vue";
 
 const isAuthenticated = () => {
   return localStorage.getItem("auth_token") !== null;
@@ -43,6 +44,12 @@ const routes: RouteRecordRaw[] = [
         next();
       }
     },
+  },
+  {
+    path: '/crontabs/:id/logs',
+    name: 'CrontabLogDetail',
+    component: CronLogDetail,
+    props: route => ({ id: route.params.id })
   },
   {
     path: "/:pathMatch(.*)*",

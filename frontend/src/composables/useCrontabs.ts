@@ -11,6 +11,14 @@ export interface Crontab {
   updated_at: string;
 }
 
+export interface CrontabLogResponse {
+  crontab: Pick<Crontab, "id" | "name">
+  logs: {
+    stdout: string
+    stderr: string
+  }
+}
+
 export interface CrontabInput {
   name: string;
   schedule: string;
@@ -127,7 +135,7 @@ export function useCrontabs() {
     error.value = '';
     
     try {
-      const response = await get(`/crontabs/${id}/logs`);
+      const response = await get<CrontabLogResponse>(`/crontabs/${id}/logs`);
       return response.data;
     } catch (err: any) {
       error.value = typeof err === 'string' ? err : 'Failed to fetch crontab logs';

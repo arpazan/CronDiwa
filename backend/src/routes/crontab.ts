@@ -1,14 +1,14 @@
 import { FastifyPluginAsync } from "fastify";
 import { Crontab } from "../types/type.js";
 import {
+  clearCrontabLogs,
+  readCrontabLogs,
   removeCrontabFile,
   testCrontabCommand,
   writeCrontabFile,
 } from "../utils/cron.js";
 
 const crontabRoutes: FastifyPluginAsync = async (fastify) => {
-  // await initCronSystem(fastify.log);
-
   // Get all crontabs
   fastify.get(
     "/crontabs",
@@ -54,7 +54,7 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.basicAuth,
     },
     async (request, reply) => {
-      const { name, schedule, command, active = 1 } = request.body;
+      const { name, schedule, command, active = 0 } = request.body;
 
       const insertStmt = await fastify.db.prepare(
         "INSERT INTO crontabs (name, schedule, command, active) VALUES (?, ?, ?, ?)"
@@ -149,7 +149,7 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
         "DELETE FROM crontabs WHERE id = ?"
       );
       await deleteStmt.run(id);
-
+      await removeCrontabFile(parseInt(id), fastify.log);
       reply.code(204).send();
     }
   );
@@ -218,6 +218,69 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (error) {
         fastify.log.error(`Error testing command: ${error}`);
         reply.code(500).send({ error: `Failed to test command: ${error}` });
+      }
+    }
+  );
+
+  fastify.get<{ Params: { id: string } }>(
+    "/crontabs/:id/logs",
+    {
+      preHandler: fastify.basicAuth,
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      try {
+        // Check if the crontab exists
+        const getStmt = await fastify.db.prepare(
+          "SELECT * FROM crontabs WHERE id = ?"
+        );
+        const crontab = (await getStmt.get(id)) as Crontab;
+
+        if (!crontab) {
+          reply.code(404).send({ error: "Crontab not found" });
+          return;
+        }
+
+        const logs = await readCrontabLogs(parseInt(id), fastify.log);
+
+        return {
+          crontab: { id: crontab.id, name: crontab.name },
+          logs,
+        };
+      } catch (error) {
+        fastify.log.error(`Error fetching logs for crontab ${id}: ${error}`);
+        reply.code(500).send({ error: `Failed to fetch logs: ${error}` });
+      }
+    }
+  );
+
+  fastify.delete<{ Params: { id: string } }>(
+    "/crontabs/:id/logs",
+    {
+      preHandler: fastify.basicAuth,
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      try {
+        // Check if the crontab exists
+        const getStmt = await fastify.db.prepare(
+          "SELECT * FROM crontabs WHERE id = ?"
+        );
+        const crontab = (await getStmt.get(id)) as Crontab;
+
+        if (!crontab) {
+          reply.code(404).send({ error: "Crontab not found" });
+          return;
+        }
+
+        await clearCrontabLogs(parseInt(id), fastify.log);
+
+        return { success: true };
+      } catch (error) {
+        fastify.log.error(`Error clearing logs for crontab ${id}: ${error}`);
+        reply.code(500).send({ error: `Failed to clear logs: ${error}` });
       }
     }
   );
