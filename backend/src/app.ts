@@ -11,9 +11,7 @@ export type AppOptions = {
 } & Partial<AutoloadPluginOptions>;
 
 // Pass --options via CLI arguments in command to enable these options.
-const options: AppOptions = {
-  
-};
+const options: AppOptions = {};
 
 const app: FastifyPluginAsync<AppOptions> = async (
   fastify,
@@ -31,19 +29,6 @@ const app: FastifyPluginAsync<AppOptions> = async (
     forceESM: true,
   });
 
-  fastify.addHook("onReady", async () => {
-    try {
-      fastify.log.info("Server is ready, initializing cron daemon...");
-
-      const activeCrontabs = await fastify.db.all(
-        "SELECT * FROM crontabs WHERE active = 1"
-      );
-      fastify.log.info(`Loaded ${activeCrontabs.length} active crontabs`);
-
-    } catch (err) {
-      fastify.log.error(`Error initializing cron daemon: ${err}`);
-    }
-  });
 };
 export default app;
 export { app, options };

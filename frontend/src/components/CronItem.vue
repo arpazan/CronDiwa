@@ -21,12 +21,13 @@
         </div>
       </div>
       <div class="flex space-x-2">
-        <button title="Test"
-          class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          <FireIcon class="h-5 w-5 text-primary-main" />
+        <button title="Log" @click="viewLogs(crontab.id)"
+          class="p-1 rounded-full hover:bg-secondary-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <DocumentTextIcon class="h-5 w-5 text-primary-main" />
         </button>
+
         <button @click="$emit('toggle', crontab.id)" :title="crontab.active ? 'Deactivate' : 'Activate'"
-          class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          class="p-1 rounded-full hover:bg-secondary-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           <template v-if="crontab.active">
             <PauseIcon class="h-5 w-5 text-yellow-500" />
           </template>
@@ -34,25 +35,34 @@
             <PlayIcon class="h-5 w-5 text-green-500" />
           </template>
         </button>
+        <template v-if="crontab.active == 0">
+          <button title="Test"
+            class="p-1 rounded-full hover:bg-secondary-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <FireIcon class="h-5 w-5 text-primary-main" />
+          </button>
+          <button @click="$emit('edit', crontab)" title="Edit"
+            class="p-1 rounded-full hover:bg-secondary-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <PencilIcon class="h-5 w-5 text-primary-main" />
+          </button>
 
-        <button @click="$emit('edit', crontab)" title="Edit"
-          class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          <PencilIcon class="h-5 w-5 text-primary-main" />
-        </button>
+          <button @click="$emit('delete', crontab.id)" title="Delete"
+            class="p-1 rounded-full hover:bg-secondary-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <TrashIcon class="h-5 w-5 text-red-500" />
+          </button>
+        </template>
 
-        <button @click="$emit('delete', crontab.id)" title="Delete" :disabled="crontab.active == 0"
-          class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          <TrashIcon :class="[crontab.active == 0 ? 'text-gray-500' : 'text-red-500']" class="h-5 w-5 " />
-        </button>
       </div>
     </div>
   </li>
 </template>
 
 <script setup lang="ts">
-import { ClockIcon, PencilIcon, TrashIcon, PauseIcon, PlayIcon, CommandLineIcon, FireIcon } from '@heroicons/vue/24/outline';
+import { ClockIcon, PencilIcon, TrashIcon, PauseIcon, PlayIcon, CommandLineIcon, FireIcon, DocumentTextIcon } from '@heroicons/vue/24/outline';
 import type { Crontab } from '../composables/useCrontabs';
 import dayjs from 'dayjs';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 defineProps<{
   crontab: Crontab
@@ -63,4 +73,8 @@ defineEmits<{
   (e: 'delete', id: number): void
   (e: 'toggle', id: number): void
 }>();
+
+const viewLogs = (id: number) => {
+  router.push(`/crontabs/${id}/logs`);
+};
 </script>

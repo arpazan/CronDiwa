@@ -24,7 +24,6 @@ const formData = reactive<CrontabInput>({
   name: '',
   schedule: '',
   command: '',
-  active: 1
 });
 
 // Validation state
@@ -57,7 +56,6 @@ const resetForm = () => {
   formData.name = '';
   formData.schedule = '';
   formData.command = '';
-  formData.active = 1;
 
   // Reset validation
   validationErrors.name = '';

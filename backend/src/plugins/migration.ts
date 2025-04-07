@@ -36,7 +36,7 @@ const migrationPlugin: FastifyPluginCallback<MigrationPluginOptions> = (
   done
 ) => {
   const {
-    migrationsPath = path.join(process.cwd(), "src/migrations"),
+    migrationsPath = process.env.MIGRATIONS_PATH || path.join(process.cwd(), "src/migrations"),
     autoMigrate = true,
     migrationExtension = ".sql",
     migrationsTable = "migrations",
@@ -83,9 +83,8 @@ const migrationPlugin: FastifyPluginCallback<MigrationPluginOptions> = (
       const migrationFiles = fs
         .readdirSync(migrationsPath)
         .filter((file) => file.endsWith(migrationExtension))
-        .sort(); // Sort to ensure migrations run in order
-      console.log({migrationFiles})
-      // Apply pending migrations
+        .sort(); 
+
       let appliedCount = 0;
       for (const file of migrationFiles) {
         const migrationPath = path.join(migrationsPath, file);
