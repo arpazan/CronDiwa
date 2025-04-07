@@ -1,6 +1,6 @@
 {
     "name": "crondiwa",
-    "version": "0.1.01",
+    "version": "0.1.1",
     "description": "Crontab UI with Vue.js frontend and Fastify backend",
     "scripts": {
       "build:frontend": "cd frontend && npm run build",

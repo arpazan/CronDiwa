@@ -33,7 +33,7 @@ RUN npm run build:ts
 # -----------------------------
 # Stage 3: Final Image with Nginx
 # -----------------------------
-FROM nginx:1.27.4-alpine3.21
+FROM nginx:1.27.4-alpine-slim
 
 # Set environment variables
 ENV NODE_ENV=production \

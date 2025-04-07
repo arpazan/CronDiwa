@@ -1,4 +1,4 @@
-VER=0.1.01
+VER=0.1.1
 
 release:
 	sed -i '' "s/version\": \".*/version\": \"$(VER)\",/" package.json
