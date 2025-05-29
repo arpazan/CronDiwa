@@ -7,6 +7,7 @@ import {
   testCrontabCommand,
   writeCrontabFile,
 } from "../utils/cron.js";
+import { Action } from "../domains/revision/type.js";
 
 const crontabRoutes: FastifyPluginAsync = async (fastify) => {
   // Get all crontabs
@@ -16,10 +17,7 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.basicAuth,
     },
     async () => {
-      const stmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs ORDER BY id"
-      );
-      const crontabs = (await stmt.all()) as Crontab[];
+      const crontabs = await fastify.cronService.list();
       return { crontabs };
     }
   );
@@ -31,10 +29,7 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.basicAuth,
     },
     async (request, reply) => {
-      const stmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs WHERE id = ?"
-      );
-      const crontab = (await stmt.get(request.params.id)) as Crontab;
+      const crontab = await fastify.cronService.get(parseInt(request.params.id));
 
       if (!crontab) {
         reply.code(404).send({ error: "Crontab not found" });
@@ -56,15 +51,9 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { name, schedule, command, active = 0 } = request.body;
 
-      const insertStmt = await fastify.db.prepare(
-        "INSERT INTO crontabs (name, schedule, command, active) VALUES (?, ?, ?, ?)"
-      );
-      const result = await insertStmt.run(name, schedule, command, active);
+      const result = await fastify.cronService.create({ name, schedule, command, active } as Crontab);
 
-      const getStmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs WHERE id = ?"
-      );
-      const crontab = await getStmt.get(result.lastID);
+      const crontab = await fastify.cronService.get(result.lastID as number);
 
       reply.code(201).send({ crontab });
     }
@@ -88,41 +77,22 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
       const { id } = request.params;
       const { name, schedule, command, active } = request.body;
 
-      const getStmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs WHERE id = ?"
-      );
-      const crontab = (await getStmt.get(id)) as Crontab;
-
+      const crontab = await fastify.cronService.get(parseInt(id));
       if (!crontab) {
         reply.code(404).send({ error: "Crontab not found" });
         return;
       }
 
-      const updateStmt = await fastify.db.prepare(`
-      UPDATE crontabs 
-      SET 
-        name = COALESCE(?, name),
-        schedule = COALESCE(?, schedule),
-        command = COALESCE(?, command),
-        active = COALESCE(?, active),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
+      const result = await fastify.cronService.update(parseInt(id), { name, schedule, command, active } as Crontab);
 
-      await updateStmt.run(
-        name !== undefined ? name : null,
-        schedule !== undefined ? schedule : null,
-        command !== undefined ? command : null,
-        active !== undefined ? active : null,
-        id
-      );
+      if (result.changes === 0) {
+        reply.code(400).send({ error: "Failed to update crontab" });
+        return;
+      }
 
-      const getUpdatedStmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs WHERE id = ?"
-      );
-      const updatedCrontab = await getUpdatedStmt.get<Crontab>(id);
+      await fastify.revisionService.create("crontabs", Action.UPDATE, crontab);
 
-      return { crontab: updatedCrontab };
+      return { crontab: crontab };
     }
   );
 
@@ -135,20 +105,15 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { id } = request.params;
 
-      const getStmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs WHERE id = ?"
-      );
-      const crontab = (await getStmt.get(id)) as Crontab;
+      const crontab = await fastify.cronService.get(parseInt(id));
 
       if (!crontab) {
         reply.code(404).send({ error: "Crontab not found" });
         return;
       }
 
-      const deleteStmt = await fastify.db.prepare(
-        "DELETE FROM crontabs WHERE id = ?"
-      );
-      await deleteStmt.run(id);
+      await fastify.cronService.delete(parseInt(id));
+      await fastify.revisionService.create("crontabs", Action.DELETE, crontab);
       await removeCrontabFile(parseInt(id), fastify.log);
       reply.code(204).send();
     }
@@ -162,10 +127,7 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const getStmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs WHERE id = ?"
-      );
-      const crontab = (await getStmt.get(id)) as Crontab;
+      const crontab = await fastify.cronService.get(parseInt(id));
 
       if (!crontab) {
         reply.code(404).send({ error: "Crontab not found" });
@@ -175,21 +137,18 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
       // Toggle active status
       const newActive = crontab.active === 1 ? 0 : 1;
 
-      const updateStmt = await fastify.db.prepare(`
-      UPDATE crontabs 
-      SET active = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-      await updateStmt.run(newActive, id);
+      const result = await fastify.cronService.update(parseInt(id), { ...crontab, active: newActive } as Crontab);
 
-      const getUpdatedStmt = await fastify.db.prepare(
-        "SELECT * FROM crontabs WHERE id = ?"
-      );
-      const updatedCrontab = (await getUpdatedStmt.get(id)) as Crontab;
+      const updatedCrontab = await fastify.cronService.get(parseInt(id));
+
+      if (result.changes === 0) {
+        reply.code(400).send({ error: "Failed to update crontab" });
+        return;
+      }
 
       if (newActive === 1) {
         // If activated, write the crontab file
-        await writeCrontabFile(updatedCrontab, fastify.log);
+        await writeCrontabFile(updatedCrontab as Crontab, fastify.log);
       } else {
         // If deactivated, remove the crontab file
         await removeCrontabFile(parseInt(id), fastify.log);
@@ -232,10 +191,7 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
 
       try {
         // Check if the crontab exists
-        const getStmt = await fastify.db.prepare(
-          "SELECT * FROM crontabs WHERE id = ?"
-        );
-        const crontab = (await getStmt.get(id)) as Crontab;
+        const crontab = await fastify.cronService.get(parseInt(id));
 
         if (!crontab) {
           reply.code(404).send({ error: "Crontab not found" });
@@ -265,10 +221,7 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
 
       try {
         // Check if the crontab exists
-        const getStmt = await fastify.db.prepare(
-          "SELECT * FROM crontabs WHERE id = ?"
-        );
-        const crontab = (await getStmt.get(id)) as Crontab;
+        const crontab = await fastify.cronService.get(parseInt(id));
 
         if (!crontab) {
           reply.code(404).send({ error: "Crontab not found" });

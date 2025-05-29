@@ -7,9 +7,22 @@ import { FastifyBaseLogger } from "fastify";
 
 const execAsync = promisify(exec);
 
-export const CRON_DIR = "/etc/cron.d";
+export const CRON_DIR = process.env.CRON_PATH || "/etc/cron.d";
 const ROOT_CRON_FILE = path.join(CRON_DIR, "root");
-export const LOG_DIR = "/var/log/crontabs";
+export const LOG_DIR = process.env.LOG_DIR || "/var/log/crontabs";
+
+export async function initCronSystem(logger: FastifyBaseLogger): Promise<void> {
+  try {
+    await fs.mkdir(LOG_DIR, { recursive: true });
+    await fs.mkdir(CRON_DIR, { recursive: true });
+    await execAsync(`chmod 755 ${LOG_DIR}`);
+    await execAsync(`chmod 755 ${CRON_DIR}`);
+    logger.info("Cron system initialized successfully");
+  } catch (error) {
+    logger.error(`Failed to initialize cron system: ${error}`);
+    throw new Error(`Failed to initialize cron system: ${error}`);
+  }
+}
 
 async function reloadCron(logger: FastifyBaseLogger): Promise<void> {
   try {
