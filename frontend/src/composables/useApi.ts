@@ -1,8 +1,14 @@
-import { ref } from 'vue';
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, AxiosError, HttpStatusCode } from 'axios';
-import {  useRouter } from 'vue-router';
+import { ref } from "vue";
+import axios, {
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  AxiosError,
+} from "axios";
+import { useAuth } from "./useAuth";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000/crondiwa/api";
 
 export interface ApiResponse<T = any> {
   data: T;
@@ -11,19 +17,17 @@ export interface ApiResponse<T = any> {
 }
 
 export function useApi() {
-  const router = useRouter()
   const api: AxiosInstance = axios.create({
     baseURL: API_URL,
   });
 
   // Add request interceptor for authentication
   api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Basic ${token}`;
-    }
+    const token = localStorage.getItem("auth_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   });
+
 
   const request = async <T>(
     method: string,
@@ -39,19 +43,19 @@ export function useApi() {
       let response: AxiosResponse<T>;
 
       switch (method.toLowerCase()) {
-        case 'get':
+        case "get":
           response = await api.get<T>(url, config);
           break;
-        case 'post':
+        case "post":
           response = await api.post<T>(url, data, config);
           break;
-        case 'put':
+        case "put":
           response = await api.put<T>(url, data, config);
           break;
-        case 'patch':
+        case "patch":
           response = await api.patch<T>(url, data, config);
           break;
-        case 'delete':
+        case "delete":
           response = await api.delete<T>(url, config);
           break;
         default:
@@ -61,14 +65,14 @@ export function useApi() {
       responseData = response.data;
     } catch (err) {
       const axiosError = err as AxiosError<{
-        statusCode: number,
-        error: string,
-        message: string,
+        statusCode: number;
+        error: string;
+        message: string;
       }>;
-      error.value = axiosError.response?.data?.error || axiosError.message || 'An error occurred';
-      if(axiosError.status == HttpStatusCode.Unauthorized){
-        logout()
-      }
+      error.value =
+        axiosError.response?.data?.error ||
+        axiosError.message ||
+        "An error occurred";
       throw error.value;
     } finally {
       loading.value = false;
@@ -81,52 +85,20 @@ export function useApi() {
     };
   };
 
-  const get = <T>(url: string, config?: AxiosRequestConfig) => 
-    request<T>('get', url, undefined, config);
-  
-  const post = <T>(url: string, data?: any, config?: AxiosRequestConfig) => 
-    request<T>('post', url, data, config);
-  
-  const put = <T>(url: string, data?: any, config?: AxiosRequestConfig) => 
-    request<T>('put', url, data, config);
-  
-  const patch = <T>(url: string, data?: any, config?: AxiosRequestConfig) => 
-    request<T>('patch', url, data, config);
-  
-  const del = <T>(url: string, config?: AxiosRequestConfig) => 
-    request<T>('delete', url, undefined, config);
+  const get = <T>(url: string, config?: AxiosRequestConfig) =>
+    request<T>("get", url, undefined, config);
 
-  // Auth functions
-  const login = async (username: string, password: string): Promise<boolean> => {
-    try {
-      // Create Base64 encoded credentials
-      const token = btoa(`${username}:${password}`);
-      
-      await get('/login', {
-        headers: {
-          Authorization: `Basic ${token}`
-        }
-      });
-      
-      localStorage.setItem('auth_token', token);
-      return true;
-    } catch (error) {
-      localStorage.removeItem('auth_token');
-      return false;
-    }
-  };
+  const post = <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    request<T>("post", url, data, config);
 
-  const logout = (): void => {
-    localStorage.removeItem('auth_token');
-    console.log({router})
-    if (router) {
-      router.push('/login');
-    }
-  };
+  const put = <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    request<T>("put", url, data, config);
 
-  const isAuthenticated = (): boolean => {
-    return !!localStorage.getItem('auth_token');
-  };
+  const patch = <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    request<T>("patch", url, data, config);
+
+  const del = <T>(url: string, config?: AxiosRequestConfig) =>
+    request<T>("delete", url, undefined, config);
 
   return {
     api,
@@ -136,8 +108,5 @@ export function useApi() {
     put,
     patch,
     delete: del,
-    login,
-    logout,
-    isAuthenticated
   };
 }

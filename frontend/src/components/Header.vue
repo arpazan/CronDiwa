@@ -19,7 +19,7 @@ const handleLogout = () => {
 
       <div v-if="authenticated">
         <div class="flex items-center space-x-4">
-          <span>Welcome, {{ user }}</span>
+          <span>Welcome, {{ user?.name }}</span>
           <button @click="handleLogout" class="btn btn-danger text-sm">
             Logout
           </button>
