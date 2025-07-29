@@ -13,9 +13,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
   // Get all crontabs
   fastify.get(
     "/crontabs",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async () => {
       const crontabs = await fastify.cronService.list();
       return { crontabs };
@@ -25,9 +22,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
   // Get single crontab
   fastify.get<{ Params: { id: string } }>(
     "/crontabs/:id",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const crontab = await fastify.cronService.get(parseInt(request.params.id));
 
@@ -45,9 +39,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
     Body: { name: string; schedule: string; command: string; active?: number };
   }>(
     "/crontabs",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const { name, schedule, command, active = 0 } = request.body;
 
@@ -70,9 +61,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
     };
   }>(
     "/crontabs/:id",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const { id } = request.params;
       const { name, schedule, command, active } = request.body;
@@ -99,9 +87,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
   // Delete crontab
   fastify.delete<{ Params: { id: string } }>(
     "/crontabs/:id",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const { id } = request.params;
 
@@ -122,9 +107,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
   // Toggle crontab active status
   fastify.patch<{ Params: { id: string } }>(
     "/crontabs/:id/toggle",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const { id } = request.params;
       const crontab = await fastify.cronService.get(parseInt(id));
@@ -160,9 +142,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.post(
     "/crontabs/test-command",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const { command } = request.body as { command: string };
 
@@ -183,9 +162,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.get<{ Params: { id: string } }>(
     "/crontabs/:id/logs",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const { id } = request.params;
 
@@ -213,9 +189,6 @@ const crontabRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.delete<{ Params: { id: string } }>(
     "/crontabs/:id/logs",
-    {
-      preHandler: fastify.basicAuth,
-    },
     async (request, reply) => {
       const { id } = request.params;
 

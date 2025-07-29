@@ -18,7 +18,7 @@ export interface CronParts {
   }
   
   // Cron validation regex - standard 5-part cron expression
-  export const cronRegex = /^(\*|([0-9]|[1-5][0-9])(\/\d+)?)((\s+(\*|([0-9]|1[0-9]|2[0-3])(\/\d+)?)){4})$/;
+  export const cronRegex = /^(((\*|\d+|\d+-\d+)(\/\d+)?)(,(\*|\d+|\d+-\d+)(\/\d+)?)*)(\s+(((\*|\d+|\d+-\d+)(\/\d+)?)(,(\*|\d+|\d+-\d+)(\/\d+)?)*)){4}$/;
 
   export const cronTemplates: CronTemplate[] = [
     { label: 'Every minute', value: '* * * * *' },
