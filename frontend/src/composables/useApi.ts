@@ -28,6 +28,16 @@ export function useApi() {
     return config;
   });
 
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      const { logout } = useAuth();
+      if (error.response?.status === 401) {
+        logout();
+      }
+      return Promise.reject(error);
+    }
+  );
 
   const request = async <T>(
     method: string,

@@ -1,13 +1,20 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { useAuth } from '../composables/useAuth';
 import router from '../router';
 
-const { authenticated, logout, user } = useAuth();
+const { authenticated, logout, user, checkAuth } = useAuth();
+const loading = ref(true);
+onMounted(async () => {
+  await checkAuth();
+  loading.value = false;
+});
 
 const handleLogout = () => {
   logout();
   router.push('/login');
 };
+
 </script>
 
 <template>
@@ -17,7 +24,7 @@ const handleLogout = () => {
         <h1 class="text-3xl font-bold tracking-tight text-primary-main">CronDiwa</h1>
       </router-link>
 
-      <div v-if="authenticated">
+      <div v-if="!loading && authenticated">
         <div class="flex items-center space-x-4">
           <span>Welcome, {{ user?.name }}</span>
           <button @click="handleLogout" class="btn btn-danger text-sm">

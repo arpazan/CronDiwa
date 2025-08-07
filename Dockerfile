@@ -11,8 +11,6 @@ RUN npm ci
 COPY frontend/ ./
 
 # Build the frontend application
-# Set API URL to /api for the production build
-ENV VITE_API_URL=/api
 RUN npm run build
 
 # -----------------------------

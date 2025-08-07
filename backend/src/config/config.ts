@@ -1,8 +1,6 @@
 import dotenv from "dotenv";
-import path from "path";
 
-// Load .env file
-dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+dotenv.config({quiet: true});
 
 
 export const config = {
@@ -12,7 +10,7 @@ export const config = {
     env: process.env.NODE_ENV || "development",
   },
   keycloak: {
-    domain: process.env.KEYCLOAK_DOMAIN || "http://localhost:8080",
+    domain: process.env.KEYCLOAK_DOMAIN || "localhost:8080",
     realm: process.env.KEYCLOAK_REALM || "default",
     clientId: process.env.KEYCLOAK_CLIENT_ID || "myclient",
     clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "secret",

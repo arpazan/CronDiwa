@@ -1,16 +1,14 @@
-# docker-compose.yml
 services:
   crontab-ui:
     build: .
     ports:
       - "8000:8000"
     volumes:
-      - crontab-data:/app/data
-      - crontab-logs:/var/log/crontabs
-    environment:
-      - AUTH_USERNAME=admin
-      - AUTH_PASSWORD=password
-      - CRON_IN_DOCKER=true
+      - ./.tmp/crontab-data:/app/data
+      - ./.tmp/crontab-logs:/var/log/crontabs
+      - ./.tmp/supervisor-logs:/var/log/supervisor
+    env_file:
+      - .env
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -18,7 +16,9 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    networks:
+      - dev_network
 
-volumes:
-  crontab-data:
-  crontab-logs:
+networks:
+  dev_network:
+    external: true

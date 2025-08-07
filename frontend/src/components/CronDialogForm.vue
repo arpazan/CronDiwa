@@ -155,13 +155,13 @@ watch(() => props.crontab, (newValue) => {
     formData.schedule = newValue.schedule;
     formData.command = newValue.command;
     formData.active = newValue.active;
-    
+
     // Update cron builder with the schedule
     resetCronBuilder(newValue.schedule);
   } else if (props.show) {
     // We're adding a new crontab
     resetForm();
-    
+
     // Set a default schedule
     const defaultSchedule = '0 0 * * *';
     formData.schedule = defaultSchedule;
@@ -205,14 +205,8 @@ onMounted(() => {
             <div class="mt-4 space-y-4">
               <div>
                 <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                <input 
-                  type="text" 
-                  id="name" 
-                  v-model="formData.name" 
-                  class="input mt-1"
-                  :class="{'border-red-500': validationErrors.name}"
-                  placeholder="Daily Backup" 
-                />
+                <input type="text" id="name" v-model="formData.name" class="input mt-1"
+                  :class="{ 'border-red-500': validationErrors.name }" placeholder="Daily Backup" />
                 <p v-if="validationErrors.name" class="mt-1 text-xs text-red-500">
                   {{ validationErrors.name }}
                 </p>
@@ -225,19 +219,11 @@ onMounted(() => {
 
                 <!-- Cron Expression Input with Validation -->
                 <div class="relative">
-                  <input 
-                    type="text" 
-                    id="schedule" 
-                    v-model="cronExpression"
-                    class="input mt-1 pr-10" 
-                    :class="{'border-red-500': validationErrors.schedule}"
-                    placeholder="0 0 * * *"
-                  />
+                  <input type="text" id="schedule" v-model="cronExpression" class="input mt-1 pr-10"
+                    :class="{ 'border-red-500': validationErrors.schedule }" placeholder="0 0 * * *" />
                   <div class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
-                    <CheckCircleIcon v-if="isCronValid && cronExpression"
-                      class="h-5 w-5 text-green-500" />
-                    <ExclamationCircleIcon v-else-if="cronExpression"
-                      class="h-5 w-5 text-red-500" />
+                    <CheckCircleIcon v-if="isCronValid && cronExpression" class="h-5 w-5 text-green-500" />
+                    <ExclamationCircleIcon v-else-if="cronExpression" class="h-5 w-5 text-red-500" />
                   </div>
                 </div>
                 <p v-if="validationErrors.schedule" class="mt-1 text-xs text-red-500">
@@ -253,11 +239,9 @@ onMounted(() => {
                     <!-- Minutes -->
                     <div>
                       <label class="block text-xs font-medium text-gray-500">Minutes</label>
-                      <select 
-                        v-model="cronParts.minute"
+                      <select v-model="cronParts.minute"
                         class="block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        @change="updateFromParts"
-                      >
+                        @change="updateFromParts">
                         <option value="*">Every minute (*)</option>
                         <option value="*/5">Every 5 minutes (*/5)</option>
                         <option value="*/15">Every 15 minutes (*/15)</option>
@@ -265,24 +249,17 @@ onMounted(() => {
                         <option value="0">At minute 0 (0)</option>
                         <option value="custom">Custom...</option>
                       </select>
-                      <input 
-                        v-if="cronParts.minute === 'custom'" 
-                        v-model="cronParts.minuteCustom"
-                        type="text"
+                      <input v-if="cronParts.minute === 'custom'" v-model="cronParts.minuteCustom" type="text"
                         class="mt-1 block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        placeholder="0-59 or */n" 
-                        @input="updateFromParts" 
-                      />
+                        placeholder="0-59 or */n" @input="updateFromParts" />
                     </div>
 
                     <!-- Hours -->
                     <div>
                       <label class="block text-xs font-medium text-gray-500">Hours</label>
-                      <select 
-                        v-model="cronParts.hour"
+                      <select v-model="cronParts.hour"
                         class="block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        @change="updateFromParts"
-                      >
+                        @change="updateFromParts">
                         <option value="*">Every hour (*)</option>
                         <option value="*/2">Every 2 hours (*/2)</option>
                         <option value="*/6">Every 6 hours (*/6)</option>
@@ -290,74 +267,53 @@ onMounted(() => {
                         <option value="12">At noon (12)</option>
                         <option value="custom">Custom...</option>
                       </select>
-                      <input 
-                        v-if="cronParts.hour === 'custom'" 
-                        v-model="cronParts.hourCustom"
-                        type="text"
+                      <input v-if="cronParts.hour === 'custom'" v-model="cronParts.hourCustom" type="text"
                         class="mt-1 block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        placeholder="0-23 or */n" 
-                        @input="updateFromParts" 
-                      />
+                        placeholder="0-23 or */n" @input="updateFromParts" />
                     </div>
 
                     <!-- Day of Month -->
                     <div>
                       <label class="block text-xs font-medium text-gray-500">Day
                         (Month)</label>
-                      <select 
-                        v-model="cronParts.dayOfMonth"
+                      <select v-model="cronParts.dayOfMonth"
                         class="block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        @change="updateFromParts"
-                      >
+                        @change="updateFromParts">
                         <option value="*">Every day (*)</option>
                         <option value="1">1st of month (1)</option>
                         <option value="15">15th of month (15)</option>
                         <option value="L">Last day of month (L)</option>
                         <option value="custom">Custom...</option>
                       </select>
-                      <input 
-                        v-if="cronParts.dayOfMonth === 'custom'"
-                        v-model="cronParts.dayOfMonthCustom" 
-                        type="text"
+                      <input v-if="cronParts.dayOfMonth === 'custom'" v-model="cronParts.dayOfMonthCustom" type="text"
                         class="mt-1 block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        placeholder="1-31 or */n" 
-                        @input="updateFromParts" 
-                      />
+                        placeholder="1-31 or */n" @input="updateFromParts" />
                     </div>
 
                     <!-- Month -->
                     <div>
                       <label class="block text-xs font-medium text-gray-500">Month</label>
-                      <select 
-                        v-model="cronParts.month"
+                      <select v-model="cronParts.month"
                         class="block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        @change="updateFromParts"
-                      >
+                        @change="updateFromParts">
                         <option value="*">Every month (*)</option>
                         <option value="1">January (1)</option>
                         <option value="6">June (6)</option>
                         <option value="12">December (12)</option>
                         <option value="custom">Custom...</option>
                       </select>
-                      <input 
-                        v-if="cronParts.month === 'custom'" 
-                        v-model="cronParts.monthCustom"
-                        type="text"
+                      <input v-if="cronParts.month === 'custom'" v-model="cronParts.monthCustom" type="text"
                         class="mt-1 block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        placeholder="1-12 or */n" 
-                        @input="updateFromParts" 
-                      />
+                        placeholder="1-12 or */n" @input="updateFromParts" />
                     </div>
 
                     <!-- Day of Week -->
                     <div>
                       <label class="block text-xs font-medium text-gray-500">Day
                         (Week)</label>
-                      <select 
-                        v-model="cronParts.dayOfWeek"
+                      <select v-model="cronParts.dayOfWeek"
                         class="block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        @change="updateFromParts"
-                      >
+                        @change="updateFromParts">
                         <option value="*">Every day (*)</option>
                         <option value="0">Sunday (0)</option>
                         <option value="1">Monday (1)</option>
@@ -367,14 +323,9 @@ onMounted(() => {
                         <option value="0,6">Weekends (0,6)</option>
                         <option value="custom">Custom...</option>
                       </select>
-                      <input 
-                        v-if="cronParts.dayOfWeek === 'custom'"
-                        v-model="cronParts.dayOfWeekCustom" 
-                        type="text"
+                      <input v-if="cronParts.dayOfWeek === 'custom'" v-model="cronParts.dayOfWeekCustom" type="text"
                         class="mt-1 block w-full text-xs border-gray-300 rounded-md shadow-sm focus:ring-primary-main focus:border-primary-main"
-                        placeholder="0-6 or */n" 
-                        @input="updateFromParts" 
-                      />
+                        placeholder="0-6 or */n" @input="updateFromParts" />
                     </div>
                   </div>
 
@@ -388,13 +339,9 @@ onMounted(() => {
                     <label class="block text-xs font-medium text-gray-700">Common
                       Templates</label>
                     <div class="grid grid-cols-2 gap-2 mt-1">
-                      <button 
-                        v-for="(template, index) in cronTemplates" 
-                        :key="index"
-                        type="button"
+                      <button v-for="(template, index) in cronTemplates" :key="index" type="button"
                         class="text-xs py-1 px-2 bg-gray-200 hover:bg-gray-300 rounded text-left"
-                        @click="applyTemplate(template.value)"
-                      >
+                        @click="applyTemplate(template.value)">
                         {{ template.label }}
                       </button>
                     </div>
@@ -404,14 +351,10 @@ onMounted(() => {
 
               <div>
                 <label for="command" class="block text-sm font-medium text-gray-700">Command</label>
-                <input 
-                  type="text" 
-                  id="command" 
-                  v-model="formData.command" 
-                  class="input mt-1"
-                  :class="{'border-red-500': validationErrors.command}"
-                  placeholder="backup.sh" 
-                />
+                <textarea id="command" rows="4" v-model="formData.command"
+                  class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-main focus:border-primary-main "
+                  :class="{ 'border-red-500': validationErrors.command }"
+                  placeholder="Write your command here..."></textarea>
                 <p v-if="validationErrors.command" class="mt-1 text-xs text-red-500">
                   {{ validationErrors.command }}
                 </p>
@@ -420,21 +363,12 @@ onMounted(() => {
           </div>
 
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button 
-              type="button" 
-              class="btn btn-primary sm:ml-3" 
-              @click="saveCrontab"
-              :disabled="formSubmitting || !isFormValid"
-            >
+            <button type="button" class="btn btn-primary sm:ml-3" @click="saveCrontab"
+              :disabled="formSubmitting || !isFormValid">
               <span v-if="formSubmitting">Saving...</span>
               <span v-else>{{ isEditMode ? 'Update' : 'Add' }}</span>
             </button>
-            <button 
-              type="button" 
-              class="btn btn-secondary mt-3 sm:mt-0" 
-              @click="closeForm"
-              :disabled="formSubmitting"
-            >
+            <button type="button" class="btn btn-secondary mt-3 sm:mt-0" @click="closeForm" :disabled="formSubmitting">
               Cancel
             </button>
           </div>

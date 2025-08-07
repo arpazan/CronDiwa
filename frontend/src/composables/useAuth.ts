@@ -30,7 +30,6 @@ export function useAuth() {
   const fetchUserProfile = async () => {
     try {
       const profile = await get<MeResponse>("auth/me");
-      console.log("User profile fetched:", profile.data);
       user.value = profile.data?.user || null;
     } catch (err) {
       console.error("Failed to fetch user profile", err);
@@ -91,7 +90,6 @@ export function useAuth() {
   };
 
   const authenticated = computed(() => !!user.value);
-  checkAuth();
   return {
     user,
     loading,
