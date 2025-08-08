@@ -1,17 +1,17 @@
 {
     "name": "crondiwa",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "description": "Crontab UI with Vue.js frontend and Fastify backend",
     "scripts": {
-      "build:frontend": "cd frontend && npm run build",
-      "build:backend": "cd backend && npm run build",
-      "build": "npm run build:frontend && npm run build:backend",
-      "docker:build": "docker build -t crontab-ui:latest .",
-      "docker:compose:build": "docker-compose build",
-      "docker:compose:up": "docker-compose up -d",
-      "docker:compose:down": "docker-compose down",
-      "docker:compose:logs": "docker-compose logs -f"
+        "build:frontend": "cd frontend && npm run build",
+        "build:backend": "cd backend && npm run build",
+        "build": "npm run build:frontend && npm run build:backend",
+        "docker:build": "docker build -t crontab-ui:latest .",
+        "docker:compose:build": "docker-compose build",
+        "docker:compose:up": "docker-compose up -d",
+        "docker:compose:down": "docker-compose down",
+        "docker:compose:logs": "docker-compose logs -f"
     },
     "author": "",
     "license": "ISC"
-  }
+}

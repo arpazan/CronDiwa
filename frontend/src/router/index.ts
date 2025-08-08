@@ -8,6 +8,7 @@ import CrontabsView from "../views/CrontabsView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFound from "../views/NotFound.vue";
 import CronLogDetail from "../components/CronLogDetail.vue";
+import { useAuth } from "../composables/useAuth";
 
 const isAuthenticated = () => {
   return localStorage.getItem("auth_token") !== null;
@@ -46,10 +47,10 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/crontabs/:id/logs',
-    name: 'CrontabLogDetail',
+    path: "/crontabs/:id/logs",
+    name: "CrontabLogDetail",
     component: CronLogDetail,
-    props: route => ({ id: route.params.id })
+    props: (route) => ({ id: route.params.id }),
   },
   {
     path: "/:pathMatch(.*)*",
@@ -75,16 +76,24 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to, _, next) => {
-  if (to.meta.requiresAuth && !isAuthenticated()) {
-    next({
-      name: "login",
-      query: { redirect: to.fullPath },
-    });
-  } else {
-    document.title = `${to.meta.title || "Crontab UI"} - Crontab Manager`;
-    next();
+router.beforeEach(async (to, _, next) => {
+  const { checkAuth, authenticated } = useAuth();
+
+  if (to.meta.requiresAuth) {
+    const isAuth = await checkAuth();
+    if (!isAuth) {
+      return next({
+        name: "login",
+        query: { redirect: to.fullPath },
+      });
+    }
   }
+  if (to.name === "Login" && authenticated.value) {
+    document.title = `${to.meta.title || "Crontab UI"} - Crontab Manager`;
+
+    return next({ name: "crontabs" });
+  }
+  next();
 });
 
 export default router;

@@ -253,6 +253,8 @@ onBeforeUnmount(() => {
     padding: 15px;
     height: 400px;
     overflow: auto;
+    display: flex;
+    flex-direction: column-reverse;
 }
 
 pre {

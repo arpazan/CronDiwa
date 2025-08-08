@@ -1,24 +1,35 @@
 import fp from "fastify-plugin";
-import { FastifyPluginAsync } from "fastify";
-import basicAuth from "@fastify/basic-auth";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import keycloakAdapter, { KeycloakOptions } from "fastify-keycloak-adapter";
+import { config } from "../config/config.js";
 
-const authPlugin: FastifyPluginAsync = async (fastify) => {
-  // Validate function for basic auth
-  const validate = async (username: string, password: string) => {
-    const validUsername = process.env.AUTH_USERNAME || "admin";
-    const validPassword = process.env.AUTH_PASSWORD || "password";
+declare module "fastify" {
+  interface FastifyRequest {
+    session?: {
+      user?: {
+        account: string;
+        name: string;
+      };
+    };
+  }
+}
 
-    if (username !== validUsername || password !== validPassword) {
-      throw new Error("Invalid credentials");
-    }
+export default fp(async (fastify: FastifyInstance) => {
+  const unauthorizedHandler = (_: FastifyRequest, reply: FastifyReply) => {
+    reply.status(401).send(`Invalid request`);
+  };
+  const opts: KeycloakOptions = {
+    appOrigin: config.app.url,
+    keycloakSubdomain: `${config.keycloak.domain.replace(
+      /^https?:\/\//,
+      ""
+    )}/realms/${config.keycloak.realm}`,
+    useHttps: config.keycloak.domain.startsWith("https"),
+    clientId: config.keycloak.clientId,
+    clientSecret: config.keycloak.clientSecret,
+    excludedPatterns: ["/crondiwa/api/health", "/crondiwa/api/auth/login"],
+    unauthorizedHandler,
   };
 
-  // Register basic auth plugin
-  fastify.register(basicAuth, {
-    validate,
-    authenticate: { realm: "Crontab API" },
-  });
-
-};
-
-export default fp(authPlugin);
+  await fastify.register(keycloakAdapter.default, opts);
+});

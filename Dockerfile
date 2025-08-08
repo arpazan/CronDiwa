@@ -1,7 +1,7 @@
 # -----------------------------
 # Stage 1: Build Frontend
 # -----------------------------
-FROM node:20-alpine AS frontend-builder
+FROM node:20-alpine3.20 AS frontend-builder
 
 WORKDIR /app/frontend
 
@@ -11,14 +11,12 @@ RUN npm ci
 COPY frontend/ ./
 
 # Build the frontend application
-# Set API URL to /api for the production build
-ENV VITE_API_URL=/api
 RUN npm run build
 
 # -----------------------------
 # Stage 2: Build Backend
 # -----------------------------
-FROM node:20-alpine AS backend-builder
+FROM node:20-alpine3.20 AS backend-builder
 
 WORKDIR /app/backend
 
@@ -33,7 +31,7 @@ RUN npm run build:ts
 # -----------------------------
 # Stage 3: Final Image with Nginx
 # -----------------------------
-FROM nginx:1.27.4-alpine-slim
+FROM nginx:1.28-alpine-slim
 
 # Set environment variables
 ENV NODE_ENV=production \
@@ -42,7 +40,17 @@ ENV NODE_ENV=production \
     CRON_IN_DOCKER=true \
     CRON_PATH=/etc/cron.d
 
-RUN apk add --no-cache bash supervisor curl nodejs npm dcron tzdata 
+RUN apk add --no-cache \
+    bash \
+    supervisor \
+    curl \
+    nodejs \
+    npm \
+    dcron \
+    tzdata \
+    docker-cli
+
+ENV PATH="/usr/bin/docker:${PATH}"
 
 RUN mkdir -p /app/backend /var/log/supervisor ${CRON_PATH} /var/log/crontabs /app/data /etc/supervisor/conf.d /app/scripts
 
@@ -62,7 +70,7 @@ RUN echo '# Root cron file for application' > /etc/cron.d/root && \
     chmod 644 /etc/cron.d/root
 
 # Copy the frontend from the frontend-builder stage
-COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
+COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html/crondiwa
 
 # Copy Nginx configuration
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf

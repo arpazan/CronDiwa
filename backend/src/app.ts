@@ -26,7 +26,7 @@ const app: FastifyPluginAsync<AppOptions> = async (
 
   void fastify.register(AutoLoad, {
     dir: path.join(__dirname, "routes"),
-    options: { prefix: "/api", ...opts },
+    options: { prefix: "crondiwa/api", ...opts },
     forceESM: true,
   });
 
